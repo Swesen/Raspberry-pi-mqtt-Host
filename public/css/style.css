@@ -1,0 +1,156 @@
+.navbar-border {
+    border-bottom: solid 5px maroon;
+}
+
+.navbar a {
+    vertical-align: middle;
+    color: #f2f2f2;
+    text-align: center;
+    padding: 16px;
+    text-decoration: none;
+    justify-self: center;
+}
+
+.navbar a:hover {
+    background-color: #ddd;
+    color: black;
+}
+
+.logo {
+    height: 39px;
+    vertical-align: middle;
+    padding: 5px;
+}
+
+.fieldset {
+    width: max-content;
+    margin: auto;
+}
+
+.scroll {
+    background-color: #606060;
+    display: flex;
+    flex-direction: column-reverse;
+    max-height: 200;
+    overflow-y: auto;
+    width: max-content;
+    margin: auto;
+}
+
+.centerBox {
+    background-color: #505050;
+    display: inline-block;
+    width: auto;
+    margin: 5px auto;
+    border-radius: 4px;
+    list-style-type: none;
+}
+
+.centerBox p {
+    text-align: left;
+    padding: 0 16px;
+}
+
+.settingsForm {
+    text-align: left;
+    padding: 16px;
+}
+
+.textBox {
+    margin: 5px;
+    font-size: 16;
+    background-color: rgba(0, 0, 0, 0);
+    border: none;
+    border-bottom: 2px solid maroon !important;
+}
+
+.w3-theme-l5 {
+    color: #000 !important;
+    background-color: #f1f1f2 !important
+}
+
+.w3-theme-l4 {
+    color: #000 !important;
+    background-color: #cfd1d4 !important
+}
+
+.w3-theme-l3 {
+    color: #fff !important;
+    background-color: #a0a3a9 !important
+}
+
+.w3-theme-l2 {
+    color: #fff !important;
+    background-color: #71757d !important
+}
+
+.w3-theme-l1 {
+    color: #fff !important;
+    background-color: #46484d !important
+}
+
+.w3-theme-d1 {
+    color: #fff !important;
+    background-color: #18191b !important
+}
+
+.w3-theme-d2 {
+    color: #fff !important;
+    background-color: #151618 !important
+}
+
+.w3-theme-d3 {
+    color: #fff !important;
+    background-color: #131315 !important
+}
+
+.w3-theme-d4 {
+    color: #fff !important;
+    background-color: #101112 !important
+}
+
+.w3-theme-d5 {
+    color: #fff !important;
+    background-color: #0d0e0f !important
+}
+
+.w3-theme-light {
+    color: #000 !important;
+    background-color: #f1f1f2 !important
+}
+
+.w3-theme-dark {
+    color: #fff !important;
+    background-color: #0d0e0f !important
+}
+
+.w3-theme-action {
+    color: #fff !important;
+    background-color: #0d0e0f !important
+}
+
+.w3-theme {
+    color: #fff !important;
+    background-color: #1a1b1d !important
+}
+
+.w3-text-theme {
+    color: #1a1b1d !important
+}
+
+.w3-border-theme {
+    border-color: #1a1b1d !important
+}
+
+.w3-hover-theme:hover {
+    color: #fff !important;
+    background-color: #1a1b1d !important
+}
+
+.w3-hover-text-theme:hover {
+    color: #1a1b1d !important
+}
+
+.w3-hover-border-theme:hover {
+    border-color: #1a1b1d !important
+}

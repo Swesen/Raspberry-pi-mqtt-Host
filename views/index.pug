@@ -1,0 +1,9 @@
+html
+  head
+    title Temperature Monitor
+    include meta.pug
+    script(src="/chart.min.js") 
+  body(class="w3-theme-d1")
+    include navbar.pug
+    div(class="w3-container w3-margin-right w3-margin-left w3-theme-l1 w3-card-4 w3-round")
+      canvas(id="tempChart")

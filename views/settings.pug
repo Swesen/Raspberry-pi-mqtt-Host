@@ -1,0 +1,28 @@
+html
+    head
+        title Temperature Monitor - Settings
+        include meta.pug
+    body(class="w3-theme-d1")
+        include navbar.pug
+        div(class="w3-container w3-margin-right  w3-margin-left w3-theme-l1 w3-card-4 w3-round")
+            form(class="w3-theme-l1 w3-center w3-padding" action="/settings" method="post")
+                fieldset(class="w3-padding w3-round fieldset")
+                    legend Graph settings
+                    each sensor in currentTemp
+                        fieldset(class="w3-padding w3-left-align")
+                            legend Sensor id: #{sensor.id}
+                            label(for=sensor.id) Name:
+                            input(class="textBox w3-theme-l1 w3-margin-right" type="text" id=sensor.id name=sensor.id value=sensor.name.toLowerCase())
+                            label(for=sensor.id) Color:
+                            input(class="w3-theme-l1 w3-margin-right" type="color", id=sensor.id name=sensor.id value=sensor.fillcolor)
+                            label(class="w3-tooltip" for=sensor.id) Order:
+                                span(class="w3-text w3-tag w3-theme-l2 w3-card-4" style="position:absolute;left:0;bottom:18px") Higher ordernumber will be drawn in front of the graph
+                            select(class="w3-theme-l1 w3-margin-right" id=sensor.id name=sensor.id value=sensor.order)
+                                - for (var x = 0; x < max; x++)
+                                    if x == sensor.order
+                                        option(value=x selected)= x
+                                    else
+                                        option(value=x)= x
+                            label(for=sensor.id) #{sensor.temp}°C
+                        br
+                    input(class="w3-button w3-round w3-theme" type="submit" value="Save")
