@@ -14,9 +14,9 @@ export interface Reading {
 }
 
 export interface TempLog {
-  [id: string]: {
+  [x: string]: {
     settings: Settings;
-    data?: [Reading];
+    data?: Reading[];
   };
 }
 

@@ -12,6 +12,10 @@ interface Data {
   y: number;
 }
 
+interface ValidReading {
+  temperature: number
+}
+
 interface Dataset {
   label: string;
   data: Data[];
@@ -63,6 +67,18 @@ app.set("views", path.join(rootFolder, "views"));
 // reports the last temperature reading of every sensor
 function currentTemp(): Reading[] {
   return [];
+}
+
+function randomColor(): Color {
+  return Color(`rgb(
+    ${(Math.random() * 256).toFixed()},
+    ${(Math.random() * 256).toFixed()},
+    ${(Math.random() * 256).toFixed()}
+    )`);
+}
+
+function newSettings() {
+  return { name: "New sensor", color: randomColor(), order: Math.floor(Math.random() * 256) }
 }
 
 router.get("/", async (req, res) => {
@@ -156,15 +172,38 @@ client.on("message", (topic, message) => {
 
   // expected topic is "temperature/{id}/reading"
   if (topicHirarcy[0] === "temperature") {
-    if (topicHirarcy[2] === "reading")
+    if (topicHirarcy[2] === "reading") {
+
       // should probably do some error checking on message
       // expected message: {temperature: ##}
-      temperatureLog[id].data.push({ temperature: JSON.parse(message.toString()).temperature, time: new Date() });
-  }
-  else {
-    console.log("Received topic:" + topic + "\nWhich is not expected!");
-  }
+      const parsedMessage = JSON.parse(message.toString());
+      const reading: Reading = { temperature: parsedMessage.temperature, time: new Date() }
+      console.log(parsedMessage);
+      if (!temperatureLog) {
+        temperatureLog = {
+          [id]: {
+            settings: newSettings(),
+            data: [reading]
+          }
+        }
+        console.log("First reading!");
+      } else if (!temperatureLog[id]) {
+        temperatureLog[id] = {
+          settings: newSettings(),
+          data: [reading]
+        }
+        console.log("New sensor!");
+      }
+      else {
+        temperatureLog[id].data.push(reading);
+        console.log("New reading");
+      }
+    }
+    else {
+      console.log("Received topic:" + topic + "\nWhich is not expected!");
+    }
 
+  }
 });
 
 client.on("offline", _ => console.log("Broker offline!"));
