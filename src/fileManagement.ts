@@ -39,7 +39,7 @@ async function readContents(folder: string): Promise<string[]> {
     });
     return contents;
   }
-  throw new Error("Creating folder: " + folder);
+  console.log("Creating folder: " + folder);
 }
 
 function error(err: NodeJS.ErrnoException) {
@@ -101,7 +101,7 @@ export async function readSavedData(): Promise<TempLog> {
       let tempLog: TempLog;
       if (idFolders) {
         idFolders.forEach(id => { readFiles(id).then(val => { if (val.id) tempLog[id] = val.id; }) });
-      } else throw new Error("No saved sensor data found");
+      } else console.log("No saved sensor data found");
       return tempLog;
     })
     .catch(err => {
