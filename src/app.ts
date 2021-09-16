@@ -5,7 +5,7 @@ import mdns = require("mdns")
 import express = require("express");
 import date = require("date-and-time");
 import compression = require("compression");
-import { readSavedData, TempLog, Settings, Reading } from "./fileManagement";
+import { readSavedData, TempLog, Settings, Reading, saveReading } from "./fileManagement";
 
 interface Data {
   x: Date;
@@ -198,6 +198,7 @@ client.on("message", (topic, message) => {
         temperatureLog[id].data.push(reading);
         console.log("New reading");
       }
+      saveReading(id, reading);
     }
     else {
       console.log("Received topic:" + topic + "\nWhich is not expected!");
