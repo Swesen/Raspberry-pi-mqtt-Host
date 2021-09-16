@@ -26,7 +26,7 @@ interface IdFileHandle {
 
 const rootFolder = path.join(__dirname, "../");
 const dataFolder = rootFolder + "data";
-let logFiles: IdFileHandle;
+const logFiles: IdFileHandle = {};
 
 async function readContents(folder: string): Promise<string[]> {
   if (!fs.existsSync(folder)) {
@@ -116,7 +116,7 @@ export async function readSavedData(): Promise<TempLog> {
 export async function saveReading(id: string, reading: Reading): Promise<void> {
   await readContents(dataFolder + "/" + id);
   const { logPath } = getPath(id);
-  if (logFiles[id]) {
+  if (logFiles && logFiles[id]) {
     logFiles[id].write(JSON.stringify(reading) + ",\n");
   } else {
     logFiles[id] = fs.createWriteStream(logPath, { flags: "a" });

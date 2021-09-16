@@ -49,7 +49,7 @@ const app = express();
 const router = express.Router();
 const client = mqtt.connect("mqtt://127.0.0.1:1883");
 
-let temperatureLog: TempLog;
+let temperatureLog: TempLog = {};
 
 readSavedData().then(val => temperatureLog = val);
 mdns.createAdvertisement(mdns.tcp("tempbroker"), 1883, { name: "TemperatureBroker" });
