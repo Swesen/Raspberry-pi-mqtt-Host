@@ -117,7 +117,7 @@ router.post("/settings", (req, res) => {
 });
 
 router.get("/log", (req, res) => {
-  let currentTemp; // = currentTemp();
+  // let currentTemp = currentTemp();
   const readings = []; // fix later
   res.render("log", {
     currentTemp: currentTemp(),
@@ -127,10 +127,10 @@ router.get("/log", (req, res) => {
 });
 
 router.get("/about", (req, res) => {
-  let currentTemp; // = currentTemp();
+  // let currentTemp = currentTemp();
 
   res.render("about", {
-    currentTemp: currentTemp,
+    currentTemp: currentTemp(),
     time: date.format(new Date(), "[Last update: ]HH:mm:ss"),
   });
 });

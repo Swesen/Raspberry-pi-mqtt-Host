@@ -43,10 +43,6 @@ async function readContents(folder: string): Promise<string[]> {
 }
 
 function error(err: NodeJS.ErrnoException) {
-  if (err.code === "ENOENT") {
-    console.error(err.path + "does not exist");
-    return;
-  }
   console.log(err);
 }
 
