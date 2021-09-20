@@ -8,16 +8,16 @@ html
             form(class="w3-theme-l1 w3-center w3-padding" action="/settings" method="post")
                 fieldset(class="w3-padding w3-round fieldset")
                     legend Graph settings
-                    each sensor in currentTemp
+                    each sensor in settings
                         fieldset(class="w3-padding w3-left-align")
                             legend Sensor id: #{sensor.id}
-                            label(for=sensor.id) Name:
-                            input(class="textBox w3-theme-l1 w3-margin-right" type="text" id=sensor.id name=sensor.id value=sensor.name.toLowerCase())
-                            label(for=sensor.id) Color:
-                            input(class="w3-theme-l1 w3-margin-right" type="color", id=sensor.id name=sensor.id value=sensor.fillcolor)
-                            label(class="w3-tooltip" for=sensor.id) Order:
+                            label(for="name") Name:
+                            input(class="textBox w3-theme-l1 w3-margin-right" type="text" id="name" name=sensor.id value=sensor.name.toLowerCase())
+                            label(for="color") Color:
+                            input(class="w3-theme-l1 w3-margin-right" type="color", id="color" name=sensor.id value=sensor.color)
+                            label(class="w3-tooltip" for="order") Order:
                                 span(class="w3-text w3-tag w3-theme-l2 w3-card-4" style="position:absolute;left:0;bottom:18px") Higher ordernumber will be drawn in front of the graph
-                            select(class="w3-theme-l1 w3-margin-right" id=sensor.id name=sensor.id value=sensor.order)
+                            select(class="w3-theme-l1 w3-margin-right" id="order" name=sensor.id value=sensor.order)
                                 - for (var x = 0; x < max; x++)
                                     if x == sensor.order
                                         option(value=x selected)= x

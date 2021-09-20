@@ -2,8 +2,8 @@ div(class="w3-bar navbar-border w3-theme")
     img(src="logo_small.png" class="w3-bar-item logo")
     a(href="/" class="w3-bar-item w3-button w3-mobile") Home
     a(href="/settings" class="w3-bar-item w3-button w3-mobile") Settings
-    a(href="/log" class="w3-bar-item w3-button w3-mobile") Log
-    a(href="/about" class="w3-bar-item w3-button w3-mobile") About
+    //- a(href="/log" class="w3-bar-item w3-button w3-mobile") Log
+    //- a(href="/about" class="w3-bar-item w3-button w3-mobile") About
     div(class="w3-bar-item w3-right")= time
     each element in currentTemp
-        div(class="w3-bar-item w3-right") #{element.name}: #{element.temp}°C
+        div(class="w3-bar-item w3-right") #{element.name}: #{element.temperature}°C

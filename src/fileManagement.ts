@@ -10,13 +10,13 @@ export interface Settings {
 
 export interface Reading {
   temperature: number;
-  time: Date;
+  time: string;
 }
 
 export interface TempLog {
   [x: string]: {
     settings: Settings;
-    data?: Reading[];
+    data: Reading[];
   };
 }
 
@@ -29,21 +29,28 @@ const dataFolder = rootFolder + "data";
 const logFiles: IdFileHandle = {};
 
 async function readContents(folder: string): Promise<string[]> {
+  let contents: string[] = [];
   if (!fs.existsSync(folder)) {
+    console.log("Folder " + folder + " doesn't exist!");
     fs.mkdir(folder, (err) => error(err));
+    console.log("Created folder " + folder);
   } else {
-    let contents: string[];
-    fs.readdir(folder, (err, files) => {
-      if (err) error(err);
-      else contents = files;
-    });
+    const contains = fs.readdirSync(folder, { withFileTypes: true });
+    contents = contains.filter(dirent => dirent.isDirectory()).map(dirent => dirent.name);
     return contents;
   }
-  console.log("Creating folder: " + folder);
 }
 
 function error(err: NodeJS.ErrnoException) {
-  console.log(err);
+  if (err) {
+    if (err.code) {
+      switch (err.code) {
+        case "ENOENT":
+          console.log("No such file or folder")
+      }
+    }
+    console.log(err);
+  }
 }
 
 function getPath(id) {
@@ -54,37 +61,36 @@ function getPath(id) {
 
 async function readFiles(id: string): Promise<TempLog> {
   const { logPath, propertiesPath } = getPath(id);
+  console.log(logPath);
+  console.log(propertiesPath);
 
-  const settings = new Promise<TempLog>((resolve) => fs.open(propertiesPath, "r", (err, fd) => {
-    error(err);
-    try {
+  const settings = new Promise<Settings>((resolve) =>
+    fs.open(propertiesPath, "r", (err, fd) => {
+      error(err);
       fs.readFile(fd, { encoding: "utf8" }, (err, data) => {
         error(err);
-        resolve({ id: { settings: JSON.parse(data) } });
+        const settings = JSON.parse(data);
+        resolve(settings);
       });
-    } finally {
-      fs.close(fd, error);
-    }
-  }));
+    })
+  );
 
-  const readings = new Promise<TempLog>((resolve, reject) => fs.open(logPath, "r", (err, fd) => {
-    error(err);
-    try {
+  const readings = new Promise<Reading[]>((resolve,) =>
+    fs.open(logPath, "r", (err, fd) => {
+      error(err);
       fs.readFile(fd, { encoding: "utf8" }, (err, data) => {
         error(err);
-        resolve({ id: { settings: null, data: JSON.parse("[" + data.slice(0, -2) + "]") } });
+        // slice of the new line and comma at the end of the file
+        const readings = JSON.parse("[" + data.slice(0, -2) + "]");
+        resolve(readings);
       });
-    } finally {
-      fs.close(fd, (err) => { if (err) { error(err); reject; } });
-    }
-  }));
+    })
+  );
 
   return Promise.all([settings, readings]).then((val) => {
-    let tempLog: TempLog;
-    val.forEach(element => {
-      if (element.id.data) tempLog.id.data = element.id.data;
-      if (element.id.settings) tempLog.id.settings = element.id.settings;
-    });
+    const [settings, readings] = val;
+    const tempLog: TempLog = {};
+    tempLog[id] = { data: readings, settings };
     return tempLog;
   });
 }
@@ -93,39 +99,46 @@ async function readFiles(id: string): Promise<TempLog> {
 export async function readSavedData(): Promise<TempLog> {
   const temperatureLog = readContents(dataFolder)
     .then(contents => {
+      console.log("Contents of " + dataFolder + " : " + contents);
       if (contents) {
-        return contents.filter(contents => fs.statSync(dataFolder + "/" + contents).isDirectory());
+        return contents;
+      } else {
+        throw new Error("Nothing in " + dataFolder);
       }
     })
     .then(idFolders => {
-      let tempLog: TempLog;
+      const promises: Promise<TempLog>[] = [];
       if (idFolders) {
-        idFolders.forEach(id => { readFiles(id).then(val => { if (val.id) tempLog[id] = val.id; }) });
+        idFolders.forEach(id => {
+          promises.push(readFiles(id));
+        });
       } else console.log("No saved sensor data found");
-      return tempLog;
+      return Promise.all(promises).then(val => {
+        const log: TempLog = {};
+        val.forEach(entry => {
+          Object.assign(log, entry);
+        });
+        return log;
+      });
     })
     .catch(err => {
-      error(err)
-      let tempLog: TempLog;
-      return tempLog;
+      error(err);
+      return {};
     });
 
-  return temperatureLog;
+  return await temperatureLog;
 }
 
 export async function saveReading(id: string, reading: Reading): Promise<void> {
   await readContents(dataFolder + "/" + id);
   const { logPath } = getPath(id);
-  if (logFiles && logFiles[id]) {
-    logFiles[id].write(JSON.stringify(reading) + ",\n");
-  } else {
+  if (!logFiles || !logFiles[id]) {
     logFiles[id] = fs.createWriteStream(logPath, { flags: "a" });
-    logFiles[id].write(JSON.stringify(reading) + ",\n");
-  }
+  } logFiles[id].write(JSON.stringify(reading) + ",\n");
 }
 
-export function saveSettings(id: string, settings: Settings): void {
-  readContents(dataFolder + "/" + id);
+export async function saveSettings(id: string, settings: Settings): Promise<void> {
+  await readContents(dataFolder + "/" + id);
   const { propertiesPath } = getPath(id);
   const settingsFile = fs.createWriteStream(propertiesPath, { flags: "w" });
   settingsFile.write(JSON.stringify(settings));
