@@ -1,3 +1,5 @@
+# Still WIP
+
 Installing on a fresh image of raspberry pi OS full:
 1. Update raspberry pi: `sudo apt-get update && sudo apt-get upgrade`
 2. Download node: `curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash -`
