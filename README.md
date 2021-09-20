@@ -6,7 +6,7 @@ Installing on a fresh image of raspberry pi OS full:
 5. Clone this repo: `git clone https://github.com/Swesen/Raspberry-pi-mqtt-Host.git`
 6. Go into repo folder: `cd Raspberry-pi-mqtt-Host`
 7. Install required node modules: `npm install --only=prod`
-8. Build: `npm build` or start manually `npm start`
+8. Build: `npm run build` or start manually `npm run start`
 
 To setup auto starting install some process manager like PM2:
 1. Install PM2: `sudo npm install pm2 -g`
