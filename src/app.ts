@@ -270,7 +270,7 @@ client.on("message", (topic, message) => {
 client.on("offline", _ => console.log("Broker offline!"));
 
 app.use("/", router);
-app.use(function (req, res, next) {
-  res.status(404).send("Sorry can't find that!");
-});
+// app.use(function (req, res, next) {
+//   res.status(404).send("Sorry can't find that!");
+// });
 app.listen(process.env.port || port);
