@@ -1,18 +1,18 @@
 import path = require("path");
-import mqtt = require("mqtt");
 import Color = require("color");
 import express = require("express");
 import compression = require("compression");
 import mdns from "mdns";
+import mqttHandler from "./mqttHandler"
 import { DateTime } from "luxon";
-import { readSavedData, TempLog, Settings, Reading, saveReading, saveSettings } from "./fileManagement";
+import { readSavedData, TempLog, saveSettings } from "./fileManagement";
 
 interface Data {
   x: string;
   y: number;
 }
 
-interface ValidReading {
+export interface ValidReading {
   temperature: number
 }
 
@@ -62,44 +62,11 @@ const chartOptions = {
     }
   },
 };
-// {
-//   responsive: true,
-//   plugins: {
-//     legend: {
-//       position: "bottom",
-//     },
-//     title: {
-//       display: true,
-//       text: "Temperature",
-//     },
-//     scales: {
-//       x: {
-//         type: 'time',
-//         time: {
-//           // Luxon format string
-//           tooltipFormat: 'HH:mm, DD-MM-YY'
-//         },
-//         title: {
-//           display: true,
-//           text: 'Date'
-//         }
-//       },
-//       y: {
-//         title: {
-//           display: true,
-//           text: 'value'
-//         }
-//       }
-//     },
-//   },
-// };
 
 const port = 3000;
 const app = express();
 const router = express.Router();
-const client = mqtt.connect("mqtt://127.0.0.1:1883");
-
-let temperatureLog: TempLog = {};
+export let temperatureLog: TempLog = {};
 
 readSavedData().then(val => temperatureLog = val);
 mdns.createAdvertisement(mdns.tcp("tempbroker"), 1883, { name: "TemperatureBroker" });
@@ -112,6 +79,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "pug");
 app.set("views", path.join(rootFolder, "views"));
+
+mqttHandler("127.0.0.1");
 
 function lastUpdate() {
   return `Last update: ${DateTime.now().toFormat("HH:mm:ss")}`;
@@ -127,18 +96,6 @@ function currentTemp() {
     };
   });
   return latestTemp;
-}
-
-function randomColor(): Color {
-  return Color.rgb(
-    (Math.random() * 255),
-    (Math.random() * 255),
-    (Math.random() * 255)
-  ).hex();
-}
-
-function newSettings() {
-  return { name: "New sensor", color: randomColor(), order: Object.keys(temperatureLog).length }
 }
 
 router.get("/", async (req, res) => {
@@ -224,50 +181,6 @@ router.get("/luxon.min.js", async (req, res) => {
 router.get("/chartjs-adapter-luxon.min.js", async (req, res) => {
   res.sendFile(path.join(rootFolder, "node_modules/chartjs-adapter-luxon/dist/chartjs-adapter-luxon.min.js"));
 });
-
-client.on("connect", _ => {
-  console.log("Connected to mqtt broker!");
-  client.subscribe("temperature/+/reading", () => {
-    console.log("Subscribed to: temperature/+/reading\n+ = the id of the sensor");
-
-  });
-});
-
-// MQTT message received from sensor client
-client.on("message", (topic, message) => {
-  const topicHirarcy = topic.split("/");
-  const id = topicHirarcy[1];
-
-  // expected topic is "temperature/{id}/reading"
-  if (topicHirarcy[0] === "temperature") {
-    if (topicHirarcy[2] === "reading") {
-
-      // should probably do some error checking on message
-      // expected message: {temperature: ##}
-      const parsedMessage: ValidReading = JSON.parse(message.toString());
-      const reading: Reading = { temperature: parsedMessage.temperature, time: DateTime.now().toISO() }
-
-      if (!temperatureLog[id]) {
-        const settings: Settings = newSettings();
-        saveSettings(id, settings);
-        temperatureLog[id] = {
-          settings: settings,
-          data: [reading]
-        }
-      }
-      else {
-        temperatureLog[id].data.push(reading);
-      }
-      saveReading(id, reading);
-    }
-    else {
-      console.log("Received topic:" + topic + "\nWhich is not expected!");
-    }
-
-  }
-});
-
-client.on("offline", _ => console.log("Broker offline!"));
 
 app.use("/", router);
 // app.use(function (req, res, next) {
