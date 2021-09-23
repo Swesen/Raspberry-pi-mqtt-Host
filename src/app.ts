@@ -91,7 +91,7 @@ function currentTemp() {
   const latestTemp = {};
   Object.keys(temperatureLog).forEach(key => {
     latestTemp[temperatureLog[key].settings.order] = {
-      name: temperatureLog[key].settings.name.slice(0,1).toUpperCase() + temperatureLog[key].settings.name.slice(1),
+      name: temperatureLog[key].settings.name.slice(0, 1).toUpperCase() + temperatureLog[key].settings.name.slice(1),
       temperature: temperatureLog[key].data.at(-1).temperature
     };
   });
@@ -153,17 +153,18 @@ router.post("/settings", (req, res) => {
 //   });
 // });
 
-router.get("/data", async (req, res) => {
+router.get("/graph/:range?", async (req, res) => {
   const chartData: ChartData = {
     type: "line",
     datasets: [],
     options: chartOptions,
   };
+  const min = setMinRange(req.params.range);
   if (temperatureLog) {
     Object.keys(temperatureLog).forEach(id => {
       chartData.datasets[temperatureLog[id].settings.order] = {
         label: temperatureLog[id].settings.name,
-        data: temperatureLog[id].data.map(reading => { return { x: reading.time, y: reading.temperature } }),
+        data: temperatureLog[id].data.filter(reading => DateTime.fromISO(reading.time) > min).map(reading => { return { x: reading.time, y: reading.temperature } }),
         borderColor: temperatureLog[id].settings.color,
         backgroundColor: temperatureLog[id].settings.color,
       };
@@ -171,6 +172,36 @@ router.get("/data", async (req, res) => {
   }
   res.json(chartData);
 });
+
+function setMinRange(range) {
+  const now = DateTime.now();
+  let min = DateTime.fromMillis(0);
+  switch (range) {
+    case "hour":
+      min = now.minus({ hours: 1 });
+      break;
+
+    case "day":
+      min = now.minus({ days: 1 });
+      break;
+
+    case "week":
+      min = now.minus({ weeks: 1 });
+      break;
+
+    case "month":
+      min = now.minus({ months: 1 });
+      break;
+
+    case "year":
+      min = now.minus({ years: 1 });
+      break;
+
+    default:
+      break;
+  }
+  return min;
+}
 
 router.get("/chart.min.js", async (req, res) => {
   res.sendFile(path.join(rootFolder, "node_modules/chart.js/dist/chart.min.js"));
@@ -182,8 +213,10 @@ router.get("/chartjs-adapter-luxon.min.js", async (req, res) => {
   res.sendFile(path.join(rootFolder, "node_modules/chartjs-adapter-luxon/dist/chartjs-adapter-luxon.min.js"));
 });
 
+router.get("*", function (req, res) {
+  res.status(404).send("Sorry can't find that!");
+});
+
 app.use("/", router);
-// app.use(function (req, res, next) {
-//   res.status(404).send("Sorry can't find that!");
-// });
 app.listen(process.env.port || port);
+

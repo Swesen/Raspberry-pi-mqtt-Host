@@ -2,11 +2,17 @@ html
   head
     title Temperature Monitor
     include meta.pug
-    script(src="/chart.min.js")
-    script(src="/luxon.min.js")
-    script(src="/chartjs-adapter-luxon.min.js") 
-    script(src="/js/chartMaker.js")
+    script(defer src="/chart.min.js")
+    script(defer src="/luxon.min.js")
+    script(defer src="/chartjs-adapter-luxon.min.js") 
+    script(defer src="/js/chartMaker.js")
   body(class="w3-theme-d1")
     include navbar.pug
-    div(class="w3-container w3-margin-right w3-margin-left w3-theme-l1 w3-card-4 w3-round")
-      canvas(id="tempChart")
+    div(class="w3-container w3-margin-right w3-margin-left w3-margin-bottom w3-theme-l1 w3-card-4 w3-round")
+      div(class="w3-row theme-bottom-border")
+        div(class="w3-container w3-half")
+          canvas(id="hourChart")
+        div(class="w3-container w3-half")
+          canvas(id="dayChart")
+      canvas(id="weekChart" class="theme-bottom-border")
+      canvas(id="monthChart")

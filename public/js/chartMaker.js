@@ -2,7 +2,8 @@ const fontColor = '#c1d4df';
 const gridColor = '#929ba1'
 const chartOptions = {
   color: fontColor,
-  pointStyle: 'line',
+  pointRadius: 0,
+  pointHitRadius: 5,
   responsive: true,
   plugins: {
     title: {
@@ -13,22 +14,29 @@ const chartOptions = {
   },
   scales: {
     x: {
-      grid:{
+      grid: {
         borderColor: gridColor,
         color: gridColor
       },
       type: 'time',
       time: {
-        minUnit: 'minute',
-        stepSize: 30,
+        minUnit: 'second',
         displayFormats: {
           second: 'HH:mm:ss',
           minute: 'yyyy-MM-dd, HH:mm',
           hour: 'yyyy-MM-dd, HH:mm',
-          day: 'yyyy-MM-dd, HH:mm'
+          day: 'yyyy-MM-dd, HH:mm',
+          week: 'yyyy-MM-dd',
+          month: 'yyyy-MM'
         }
       },
-      ticks:{
+      ticks: {
+        maxRotation: 0,
+        minRotation: 0,
+        maxTicksLimit: 10,
+        major: {
+          enabled: true
+        },
         color: fontColor,
       },
       title: {
@@ -38,11 +46,11 @@ const chartOptions = {
       }
     },
     y: {
-      grid:{
+      grid: {
         borderColor: gridColor,
         color: gridColor
       },
-      ticks:{
+      ticks: {
         color: fontColor,
       },
       title: {
@@ -54,23 +62,31 @@ const chartOptions = {
   },
 };
 
-async function createGraph() {
-  const fetched = await fetch("/data")
+async function createGraph(range) {
+  const fetched = await fetch("/graph/" + range)
     .then(response => response.json());
   const config = {
     type: fetched.type,
     data: fetched,
-    options: chartOptions
+    options: JSON.parse(JSON.stringify(chartOptions))
   };
+  config.options.plugins.title.text = config.options.plugins.title.text + " last " + range;
   // config.data.datasets.forEach(dataset => {
   //   dataset.data.forEach(data => {
   //     data.x = luxon.DateTime.fromISO(data.x);
   //   });
   // });
   var tempChart = new Chart(
-    document.getElementById("tempChart"),
+    document.getElementById(range + "Chart"),
     config
   );
 }
 
-createGraph();
+async function renderGraphs() {
+  createGraph("hour");
+  createGraph("day");
+  createGraph("week");
+  createGraph("month");
+}
+
+renderGraphs();
