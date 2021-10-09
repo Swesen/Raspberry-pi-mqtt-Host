@@ -7,7 +7,7 @@ import { ValidReading, temperatureLog } from "./app";
 export default function mqttHandler(address: string): mqtt.MqttClient {
   const client = mqtt.connect(`mqtt://${address}:1883`);
 
-  client.on("connect", _ => {
+  client.on("connect", () => {
     console.log("Connected to mqtt broker!");
     client.subscribe("temperature/+/reading", () => {
       console.log("Subscribed to: temperature/+/reading\n+ = the id of the sensor");
@@ -49,7 +49,7 @@ export default function mqttHandler(address: string): mqtt.MqttClient {
     }
   });
 
-  client.on("offline", _ => console.log("Broker offline!"));
+  client.on("offline", () => console.log("Broker offline!"));
   return client;
 }
 

@@ -22,7 +22,7 @@ interface Dataset {
 interface ChartData {
   type: string;
   datasets: Dataset[];
-  options: any;
+  options: unknown;
 }
 
 const rootFolder = path.join(__dirname, "../");
