@@ -5,12 +5,8 @@ import compression = require("compression");
 import mdns from "mdns";
 import mqttHandler from "./mqttHandler"
 import { DateTime } from "luxon";
-import { readSavedData, TempLog, saveSettings } from "./fileManagement";
+import { readSavedData, TempLog, saveSettings, Reading } from "./fileManagement";
 
-interface Data {
-  x: string;
-  y: number;
-}
 
 export interface ValidReading {
   temperature: number
@@ -18,7 +14,7 @@ export interface ValidReading {
 
 interface Dataset {
   label: string;
-  data: Data[];
+  data: Reading[];
   borderColor: Color;
   backgroundColor: Color;
 }
@@ -57,10 +53,14 @@ const chartOptions = {
     y: {
       title: {
         display: true,
-        text: 'value'
+        text: 'Temperature'
       }
     }
   },
+  parsing: {
+    xAxisKey: 'time',
+    yAxisKey: 'temperature'
+  }
 };
 
 const port = 3000;
@@ -153,7 +153,7 @@ router.post("/settings", (req, res) => {
 //   });
 // });
 
-router.get("/graph/:range?", async (req, res) => {
+router.get("/graph/:range?/:maxPoints", async (req, res) => {
   const chartData: ChartData = {
     type: "line",
     datasets: [],
@@ -163,8 +163,8 @@ router.get("/graph/:range?", async (req, res) => {
   if (temperatureLog) {
     Object.keys(temperatureLog).forEach(id => {
       chartData.datasets[temperatureLog[id].settings.order] = {
-        label: temperatureLog[id].settings.name,
-        data: temperatureLog[id].data.filter(reading => DateTime.fromISO(reading.time) > min).map(reading => { return { x: reading.time, y: reading.temperature } }),
+        label: temperatureLog[id].settings.name.slice(0,1) + temperatureLog[id].settings.name.slice(1),
+        data: filterAmountOfDataPoints(filterReadingsByDates(temperatureLog[id].data, min), parseInt(req.params.maxPoints)),
         borderColor: temperatureLog[id].settings.color,
         backgroundColor: temperatureLog[id].settings.color,
       };
@@ -173,7 +173,7 @@ router.get("/graph/:range?", async (req, res) => {
   res.json(chartData);
 });
 
-function setMinRange(range) {
+function setMinRange(range: string): DateTime {
   const now = DateTime.now();
   let min = DateTime.fromMillis(0);
   switch (range) {
@@ -201,6 +201,61 @@ function setMinRange(range) {
       break;
   }
   return min;
+}
+
+function filterAmountOfDataPoints(readings: Reading[], max: number): Reading[] {
+  const filteredReadings = [];
+
+  const pointDistance = Math.round(readings.length / max);
+
+  if (pointDistance > 1) {
+    for (let i = 0; i < readings.length; i += pointDistance) {
+      filteredReadings.push(readings[i]);
+    }
+  } else return readings;
+
+
+  return filteredReadings;
+}
+
+function filterReadingsByDates(readings: Reading[], startDate: DateTime, endDate: DateTime = DateTime.now()): Reading[] {
+  let result: Reading[] = [];
+
+  // find minutes between start and end date from what should be last index in readings
+  const startIndex = findClosestReadingToDate(readings, startDate);
+  const endIndex = findClosestReadingToDate(readings, endDate);
+  if (startIndex !== endIndex) result = readings.slice(startIndex, endIndex);
+
+  return result;
+}
+
+function findClosestReadingToDate(readings: Reading[], date: DateTime): number {
+  let index = Math.round((readings.length - 1) - Math.abs(date.diffNow('minutes').toObject()['minutes']));
+  if (index < 0) index = 0;
+  if (index > readings.length - 1) index = readings.length - 1;
+  let diff = readingDiffMinutes(readings[index], date);
+  if (index > 0) {
+    while (diff > 1) {
+      if (DateTime.fromISO(readings[index].time) > date && index > 0) {
+        const newDiff = readingDiffMinutes(readings[index - 1], date);
+        if (newDiff < diff) {
+          index--;
+          diff = newDiff;
+        } else break;
+      } else if (DateTime.fromISO(readings[index].time) < date && index < readings.length - 1) {
+        const newDiff = readingDiffMinutes(readings[index + 1], date);
+        if (newDiff < diff) {
+          index++;
+          diff = newDiff;
+        } else break;
+      }
+    }
+  } else index = 0;
+  return index;
+}
+
+function readingDiffMinutes(reading: Reading, compare: DateTime): number {
+  return Math.round(DateTime.fromISO(reading.time).diff(compare, 'minutes').toObject()['minutes']);
 }
 
 router.get("/chart.min.js", async (req, res) => {
