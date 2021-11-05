@@ -1,4 +1,8 @@
-# Still WIP
+# Depricated see new docker and database based project
+This was a project to get up and running with js/ts, this project does have some long term problems.
+The variables will be filled after about 1 month of running, since all data is storred in memory.
+The data was also stored in psudo json(missing { and } at each end of the files) to make it simple to append new data to the files.
+I'm going to redo this project to learn about docker, and how to integrate a remote database instead of localy storing all data.
 
 Installing on a fresh image of raspberry pi OS full:
 1. Update raspberry pi: `sudo apt-get update && sudo apt-get upgrade`
